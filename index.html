@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Трекер силы | Пн / Ср / Пт</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 20%, #0a111f, #03070f);
+            font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif;
+            padding: 20px 14px 60px;
+            color: #eef5ff;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        /* шапка — минималистичный акцент */
+        .top {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .top h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(115deg, #f0b87f, #c0e0ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .sub {
+            font-size: 0.75rem;
+            color: #8aa1bc;
+            margin-top: 6px;
+            background: #0f1822a0;
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* табы — стиль "пуговицы-камни" */
+        .days {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .day-btn {
+            background: #171f2c;
+            border: 1px solid #2f4055;
+            padding: 10px 20px;
+            border-radius: 48px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #bdd4ff;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+            font-family: inherit;
+            flex: 0 1 auto;
+        }
+        .day-btn.active {
+            background: #ff914d;
+            border-color: #ffbe8c;
+            color: #0a0f1a;
+            box-shadow: 0 6px 14px rgba(255, 125, 40, 0.3);
+        }
+        .day-btn:active { transform: scale(0.96); }
+
+        /* панель прогресса — лаконичная */
+        .progress-panel {
+            background: #0c1420dd;
+            backdrop-filter: blur(16px);
+            border-radius: 56px;
+            padding: 12px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid #2d475e;
+        }
+        .progress-text {
+            font-weight: 500;
+            background: #091e2a;
+            padding: 5px 20px;
+            border-radius: 60px;
+        }
+        .progress-text span {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #ffbc7a;
+            margin: 0 2px;
+        }
+        .reset {
+            background: #262f3e;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 60px;
+            color: #ffd9b5;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.8rem;
+        }
+        .reset:active { background: #3a4c62; transform: scale(0.96); }
+
+        /* карточки упражнений — совсем другой стиль, плашки с группировкой */
+        .ex-card {
+            background: rgba(12, 22, 33, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 36px;
+            margin-bottom: 22px;
+            padding: 20px 18px;
+            border: 1px solid #2e4c66;
+            transition: 0.2s;
+        }
+        .ex-card.completed {
+            background: #10262fd9;
+            border-left: 6px solid #ffb347;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+        }
+        .ex-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 8px;
+        }
+        .ex-title h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #fce2b4;
+        }
+        .muscle-badge {
+            background: #2f4b5e;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffe2b5;
+        }
+
+        /* НЕ В РЯД: подходы представлены как ПЛИТКА (сетка карточек) */
+        .sets-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+        .set-tile {
+            background: #071e2c;
+            border-radius: 28px;
+            padding: 12px 10px;
+            flex: 1 1 100px;
+            min-width: 85px;
+            text-align: center;
+            transition: all 0.1s ease;
+            border: 1px solid #325e72;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+        .set-tile.active-tile {
+            background: #f59e3b;
+            border-color: #ffdc97;
+            box-shadow: 0 5px 14px rgba(245, 158, 59, 0.3);
+        }
+        .set-tile.active-tile .set-number {
+            color: #141c26;
+        }
+        .set-tile.active-tile .set-stats {
+            color: #201d12;
+        }
+        .set-number {
+            font-size: 1rem;
+            font-weight: 800;
+            background: #102f40;
+            width: 48px;
+            padding: 6px 0;
+            border-radius: 40px;
+            display: inline-block;
+            color: #ffdeae;
+        }
+        .set-stats {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #c6deff;
+        }
+        .set-tile .check-symbol {
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+        .set-tile.active-tile .check-symbol {
+            opacity: 1;
+            text-shadow: 0 0 3px white;
+        }
+
+        /* кнопка отметить все подходы */
+        .full-mark {
+            width: 100%;
+            background: #1e4357;
+            border: none;
+            padding: 12px 0;
+            border-radius: 60px;
+            font-weight: 700;
+            color: #fef3cf;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 6px;
+        }
+        .full-mark:active {
+            background: #2e687f;
+            transform: scale(0.97);
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 40px;
+            color: #5d7b92;
+            background: #030c14a0;
+            padding: 10px;
+            border-radius: 60px;
+        }
+        @media (max-width: 550px) {
+            .set-tile { min-width: 70px; padding: 8px 6px; }
+            .set-number { width: 40px; font-size: 0.8rem; }
+            .ex-title h3 { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top">
+        <h1>⚡ СИЛОВОЙ СПЛИТ</h1>
+        <div class="sub">плиточные подходы • отмечай касанием</div>
+    </div>
+
+    <div class="days">
+        <button class="day-btn" data-day="mon">ПН · Грудь/Руки/Спина</button>
+        <button class="day-btn" data-day="wed">СР · Плечи/Трапеция/Предплечья</button>
+        <button class="day-btn" data-day="fri">ПТ · Грудь/Руки/Спина</button>
+    </div>
+
+    <div class="progress-panel">
+        <div class="progress-text">🏆 подходов: <span id="completedCount">0</span> / <span id="totalCount">0</span></div>
+        <button class="reset" id="resetDayBtn">🌀 сбросить день</button>
+    </div>
+
+    <div id="workoutContainer"></div>
+    <div class="footer">🔘 нажми на плитку подхода — отметишь выполненный. кнопка «✔ все подходы» ускорит процесс</div>
+</div>
+
+<script>
+    // ----- ПРОГРАММА (компактная, без дублирования) -----
+    const MON_PROGRAM = [
+        { name: "Сгибание рук под наклоном", muscle: "Бицепс", sets: 5, desc: "до отказа · 90%" },
+        { name: "Молотки (поочередно)", muscle: "Бицепс", sets: 5, desc: "до отказа · 90%" },
+        { name: "V-образный гриф (21 метод)", muscle: "Бицепс", sets: 3, desc: "21 повтор" },
+        { name: "Разгибание рук в тренажёре", muscle: "Трицепс", sets: 5, desc: "до отказа · 90%" },
+        { name: "Разгибание рук из-за головы", muscle: "Трицепс", sets: 5, desc: "до отказа · 90%" },
+        { name: "Жим лёжа 5х5", muscle: "Грудные", sets: 5, desc: "5 повт · 90% от 1ПМ" },
+        { name: "Жим под наклоном 5х5", muscle: "Грудные", sets: 5, desc: "5 повт · 90%" },
+        { name: "Бабочка (сведение)", muscle: "Грудные", sets: 5, desc: "до отказа · 90%" },
+        { name: "Разведение в смите (низ груди)", muscle: "Грудные", sets: 3, desc: "до отказа · 90%" },
+        { name: "Тяга верхнего блока", muscle: "Спина", sets: 5, desc: "до отказа · 90%" },
+        { name: "Тяга Т-образного грифа", muscle: "Спина", sets: 5, desc: "до отказа · 90%" },
+        { name: "Тяга горизонтального блока (узко)", muscle: "Спина", sets: 5, desc: "до отказа · 90%" },
+        { name: "Тяга верхнего блока (длинная рукоять)", muscle: "Спина", sets: 5, desc: "до отказа · 90%" }
+    ];
+
+    const WED_PROGRAM = [
+        { name: "Махи гантелями в стороны", muscle: "Плечи (боковые)", sets: 5, desc: "до отказа · 90%" },
+        { name: "Махи гантелями вперёд", muscle: "Плечи (передние)", sets: 5, desc: "до отказа · 90%" },
+        { name: "Тяга гантелей вверх (шраги)", muscle: "Трапеция", sets: 5, desc: "до отказа · 90%" },
+        { name: "Тяга гантелей на себя (запястья)", muscle: "Предплечья", sets: 5, desc: "до отказа · 90%" },
+        { name: "Мотоцикл (кисти с грифом)", muscle: "Предплечья", sets: 5, desc: "до отказа · 90%" }
+    ];
+
+    const FRI_PROGRAM = [...MON_PROGRAM]; // пятница такая же, как понедельник
+
+    const DATA = { mon: MON_PROGRAM, wed: WED_PROGRAM, fri: FRI_PROGRAM };
+
+    // состояние
+    let currentDay = "mon";
+    let completedMap = new Map(); // ключ: "day_exIdx_setIdx" -> true
+    const STORAGE_KEY = "tile_workout_v3";
+
+    function save() {
+        const obj = { day: currentDay, map: Object.fromEntries(completedMap) };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    }
+
+    function load() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        try {
+            const data = JSON.parse(raw);
+            if (data.day === "mon" || data.day === "wed" || data.day === "fri") currentDay = data.day;
+            if (data.map) {
+                for (const [k, v] of Object.entries(data.map)) if (v === true) completedMap.set(k, true);
+            }
+        } catch(e) {}
+    }
+
+    function makeKey(exIdx, setIdx) {
+        return `${currentDay}_${exIdx}_${setIdx}`;
+    }
+
+    function totalSets() {
+        const prog = DATA[currentDay];
+        let total = 0;
+        for (let i = 0; i < prog.length; i++) total += prog[i].sets;
+        return total;
+    }
+
+    function completedCount() {
+        let cnt = 0;
+        for (let v of completedMap.values()) if (v === true) cnt++;
+        return cnt;
+    }
+
+    function toggleSet(exIdx, setIdx, isChecked) {
+        const key = makeKey(exIdx, setIdx);
+        if (isChecked) completedMap.set(key, true);
+        else completedMap.delete(key);
+        save();
+        render();
+    }
+
+    function completeAllExercise(exIdx, totalSetCount) {
+        let changed = false;
+        for (let s = 0; s < totalSetCount; s++) {
+            const key = makeKey(exIdx, s);
+            if (!completedMap.get(key)) {
+                completedMap.set(key, true);
+                changed = true;
+            }
+        }
+        if (changed) { save(); render(); }
+    }
+
+    function resetCurrentDay() {
+        const prog = DATA[currentDay];
+        for (let i = 0; i < prog.length; i++) {
+            for (let s = 0; s < prog[i].sets; s++) {
+                const key = makeKey(i, s);
+                if (completedMap.has(key)) completedMap.delete(key);
+            }
+        }
+        save();
+        render();
+    }
+
+    function setDay(day) {
+        currentDay = day;
+        save();
+        render();
+        updateActiveTab();
+    }
+
+    function updateActiveTab() {
+        document.querySelectorAll('.day-btn').forEach(btn => {
+            const d = btn.getAttribute('data-day');
+            if ((d === 'mon' && currentDay === 'mon') ||
+                (d === 'wed' && currentDay === 'wed') ||
+                (d === 'fri' && currentDay === 'fri')) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // рендер с плиточной сеткой
+    function render() {
+        const container = document.getElementById('workoutContainer');
+        if (!container) return;
+        const program = DATA[currentDay];
+        let html = '';
+
+        for (let i = 0; i < program.length; i++) {
+            const ex = program[i];
+            const setsAmount = ex.sets;
+            let allDone = true;
+            for (let s = 0; s < setsAmount; s++) {
+                const key = makeKey(i, s);
+                if (!completedMap.get(key)) { allDone = false; break; }
+            }
+            const cardClass = allDone ? 'ex-card completed' : 'ex-card';
+
+            html += `<div class="${cardClass}">
+                        <div class="ex-title">
+                            <h3>${escapeHtml(ex.name)}</h3>
+                            <div class="muscle-badge">${escapeHtml(ex.muscle)}</div>
+                        </div>
+                        <div class="sets-grid">`;
+
+            // плитки подходов (не в ряд — гибкая сетка)
+            for (let s = 0; s < setsAmount; s++) {
+                const key = makeKey(i, s);
+                const isCompleted = completedMap.get(key) === true;
+                const activeTileClass = isCompleted ? 'active-tile' : '';
+                html += `<div class="set-tile ${activeTileClass}" data-ex="${i}" data-set="${s}">
+                            <div class="set-number">${s+1}/${setsAmount}</div>
+                            <div class="set-stats">⚡ ${escapeHtml(ex.desc)}</div>
+                            <div class="check-symbol">${isCompleted ? '✓✓' : '○'}</div>
+                         </div>`;
+            }
+
+            html += `</div>
+                    <button class="full-mark" data-complete-ex="${i}">
+                        ✔ Отметить все подходы (${setsAmount})
+                    </button>
+                </div>`;
+        }
+
+        container.innerHTML = html;
+        document.getElementById('completedCount').innerText = completedCount();
+        document.getElementById('totalCount').innerText = totalSets();
+        attachTileEvents(); // навешиваем клики на плитки напрямую (или делегирование, но для уверенности)
+    }
+
+    // Прямая обработка без дублей (используем делегирование на контейнере, но из-за динамики лучше глобальный слушатель один раз)
+    function attachDelegation() {
+        const container = document.getElementById('workoutContainer');
+        if (!container) return;
+        // удаляем старые если есть, но новый не наложится дублем, т.к. вызываем один раз в init
+        container.removeEventListener('click', globalClickHandler);
+        container.addEventListener('click', globalClickHandler);
+    }
+
+    function globalClickHandler(e) {
+        // клик по плитке подхода
+        const tile = e.target.closest('.set-tile');
+        if (tile && tile.hasAttribute('data-ex') && tile.hasAttribute('data-set')) {
+            e.preventDefault();
+            const exIdx = parseInt(tile.getAttribute('data-ex'), 10);
+            const setIdx = parseInt(tile.getAttribute('data-set'), 10);
+            const key = makeKey(exIdx, setIdx);
+            const currentStatus = completedMap.get(key) === true;
+            toggleSet(exIdx, setIdx, !currentStatus);
+            return;
+        }
+        // кнопка "отметить всё"
+        const fullBtn = e.target.closest('.full-mark');
+        if (fullBtn && fullBtn.hasAttribute('data-complete-ex')) {
+            e.preventDefault();
+            const exIdx = parseInt(fullBtn.getAttribute('data-complete-ex'), 10);
+            const exObj = DATA[currentDay]?.[exIdx];
+            if (exObj) {
+                completeAllExercise(exIdx, exObj.sets);
+            }
+            return;
+        }
+    }
+
+    function attachTileEvents() {
+        // ничего, делегирование уже обрабатывает динамические клики
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, (m) => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    function init() {
+        load();
+        render();
+        attachDelegation();
+        updateActiveTab();
+
+        // таб-кнопки
+        document.querySelectorAll('.day-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const day = btn.getAttribute('data-day');
+                if (day === 'mon') setDay('mon');
+                else if (day === 'wed') setDay('wed');
+                else if (day === 'fri') setDay('fri');
+            });
+        });
+        const resetBtn = document.getElementById('resetDayBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                const name = currentDay === 'mon' ? 'понедельник' : (currentDay === 'wed' ? 'среду' : 'пятницу');
+                if (confirm(`Сбросить все плитки подходов за ${name}?`)) resetCurrentDay();
+            });
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
