@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Трекер силы | Пн / Ср / Пт</title>
+    <title>ForceTracker</title>
     <style>
         * {
             margin: 0;
@@ -13,251 +13,517 @@
         }
 
         body {
-            background: radial-gradient(circle at 10% 20%, #0a111f, #03070f);
-            font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif;
-            padding: 20px 14px 60px;
-            color: #eef5ff;
+            background: linear-gradient(145deg, #11999e20 0%, #40514e 100%);
+            background-attachment: fixed;
+            /* Более читаемые шрифты: Inter для заголовков, система для всего остального с отличной поддержкой */
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 24px 16px 70px;
+            color: #e4f9f5;
+            min-height: 100vh;
+            font-weight: 450;
+            line-height: 1.5;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
-            max-width: 720px;
+            max-width: 780px;
             margin: 0 auto;
         }
 
-        /* шапка — минималистичный акцент */
+        @keyframes titleGlow {
+            0% { background-position: 0% 50%; opacity: 0.9; }
+            100% { background-position: 100% 50%; opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .top {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
         .top h1 {
-            font-size: 1.9rem;
-            font-weight: 700;
-            background: linear-gradient(115deg, #f0b87f, #c0e0ff);
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #30e3ca, #11999e, #e4f9f5);
+            background-size: 200% auto;
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             letter-spacing: -0.3px;
+            animation: titleGlow 3s ease infinite alternate;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
         }
         .sub {
             font-size: 0.75rem;
-            color: #8aa1bc;
-            margin-top: 6px;
-            background: #0f1822a0;
+            color: #e4f9f5cc;
+            margin-top: 8px;
+            background: rgba(17, 153, 158, 0.25);
             display: inline-block;
-            padding: 4px 16px;
-            border-radius: 60px;
-            backdrop-filter: blur(4px);
+            padding: 5px 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            border: 1px solid #30e3ca60;
+            font-weight: 500;
         }
 
-        /* табы — стиль "пуговицы-камни" */
         .days {
             display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
+            gap: 14px;
+            margin-bottom: 32px;
             justify-content: center;
             flex-wrap: wrap;
         }
         .day-btn {
-            background: #171f2c;
-            border: 1px solid #2f4055;
-            padding: 10px 20px;
-            border-radius: 48px;
-            font-weight: 600;
+            background: #40514e;
+            border: 1px solid #30e3ca40;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: 650;
             font-size: 0.9rem;
-            color: #bdd4ff;
+            color: #e4f9f5;
             cursor: pointer;
-            transition: 0.2s;
-            backdrop-filter: blur(5px);
+            transition: all 0.25s ease;
             font-family: inherit;
-            flex: 0 1 auto;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            letter-spacing: -0.2px;
+            line-height: 1.2;
         }
         .day-btn.active {
-            background: #ff914d;
-            border-color: #ffbe8c;
-            color: #0a0f1a;
-            box-shadow: 0 6px 14px rgba(255, 125, 40, 0.3);
+            background: linear-gradient(105deg, #11999e, #30e3ca);
+            border-color: #e4f9f5;
+            color: #1e2f2c;
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 10px 20px -5px #30e3ca80;
+            font-weight: 700;
         }
-        .day-btn:active { transform: scale(0.96); }
+        .day-btn:hover {
+            transform: translateY(-2px);
+            border-color: #30e3ca;
+        }
+        .day-btn:active { transform: scale(0.97); transition: 0.05s; }
 
-        /* панель прогресса — лаконичная */
         .progress-panel {
-            background: #0c1420dd;
+            background: rgba(64, 81, 78, 0.7);
             backdrop-filter: blur(16px);
-            border-radius: 56px;
-            padding: 12px 24px;
-            margin-bottom: 28px;
+            border-radius: 20px;
+            padding: 14px 28px;
+            margin-bottom: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            border: 1px solid #2d475e;
+            gap: 14px;
+            border: 1px solid #30e3ca80;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: all 0.2s;
         }
         .progress-text {
-            font-weight: 500;
-            background: #091e2a;
-            padding: 5px 20px;
-            border-radius: 60px;
+            font-weight: 600;
+            background: #40514ecc;
+            padding: 8px 24px;
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+            font-size: 0.9rem;
+            color: #e4f9f5;
+            letter-spacing: -0.2px;
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
         }
         .progress-text span {
             font-weight: 800;
-            font-size: 1.4rem;
-            color: #ffbc7a;
-            margin: 0 2px;
+            font-size: 1.7rem;
+            color: #30e3ca;
+            margin: 0 4px;
+            text-shadow: 0 0 6px #11999e;
+            font-family: 'Inter', 'SF Mono', monospace;
+            letter-spacing: 0;
         }
         .reset {
-            background: #262f3e;
-            border: none;
-            padding: 8px 22px;
-            border-radius: 60px;
-            color: #ffd9b5;
-            font-weight: 500;
+            background: #40514e;
+            border: 1px solid #30e3ca80;
+            padding: 8px 26px;
+            border-radius: 16px;
+            color: #30e3ca;
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.8rem;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-family: inherit;
         }
-        .reset:active { background: #3a4c62; transform: scale(0.96); }
+        .reset:hover {
+            background: #30e3ca;
+            color: #40514e;
+            transform: scale(0.97);
+            box-shadow: 0 4px 12px #30e3ca;
+            border-color: #e4f9f5;
+        }
 
-        /* карточки упражнений — совсем другой стиль, плашки с группировкой */
-        .ex-card {
-            background: rgba(12, 22, 33, 0.75);
+        .muscle-group {
+            background: rgba(64, 81, 78, 0.55);
             backdrop-filter: blur(8px);
-            border-radius: 36px;
-            margin-bottom: 22px;
-            padding: 20px 18px;
-            border: 1px solid #2e4c66;
-            transition: 0.2s;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #30e3ca60;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.3);
+        }
+        .muscle-group:hover {
+            border-color: #30e3ca;
+            transform: translateY(-2px);
+        }
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: rgba(17, 153, 158, 0.25);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 20px 20px 20px 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -0.2px;
+            color: #e4f9f5;
+            font-family: inherit;
+        }
+        .group-header:active {
+            background: #30e3ca30;
+            transform: scale(0.99);
+        }
+        .group-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .group-badge {
+            background: #11999e40;
+            border: 1px solid #30e3ca80;
+            padding: 5px 14px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #30e3ca;
+            letter-spacing: 0;
+        }
+        .group-progress {
+            background: #40514e;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #30e3ca;
+            transition: all 0.2s;
+            font-feature-settings: "tnum";
+        }
+        .group-progress.completed {
+            background: #11999e;
+            color: #e4f9f5;
+            box-shadow: 0 0 10px #30e3caaa;
+            animation: pulseGreen 0.5s ease;
+            font-weight: 700;
+        }
+        @keyframes pulseGreen {
+            0% { transform: scale(0.96); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .group-arrow {
+            font-size: 1.2rem;
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            color: #30e3ca;
+        }
+        .group-header.collapsed .group-arrow {
+            transform: rotate(-90deg);
+        }
+        
+        /* Плавное схлопывание контейнера с упражнениями */
+        .exercises-container {
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 5000px;
+            opacity: 1;
+            padding: 12px 16px 24px 16px;
+        }
+        
+        .group-header.collapsed + .exercises-container {
+            max-height: 0 !important;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin: 0;
+            transition: all 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .exercises-container .ex-card {
+            transition: all 0.3s ease-out;
+        }
+        
+        .group-header.collapsed + .exercises-container .ex-card {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease-out;
+        }
+
+        .ex-card {
+            background: #40514ecc;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            padding: 18px 18px;
+            border: 1px solid #30e3ca60;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 6px 12px -6px rgba(0,0,0,0.3);
+        }
+        .ex-card:hover {
+            transform: translateX(5px);
+            border-color: #30e3ca;
+            background: #11999e40;
         }
         .ex-card.completed {
-            background: #10262fd9;
-            border-left: 6px solid #ffb347;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+            background: #11999e60;
+            border-left: 8px solid #30e3ca;
+            border-right: 1px solid #30e3ca;
+            box-shadow: 0 10px 20px -8px #30e3ca80;
         }
         .ex-title {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             flex-wrap: wrap;
-            margin-bottom: 20px;
-            gap: 8px;
+            margin-bottom: 18px;
+            gap: 10px;
         }
         .ex-title h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 1.18rem;
+            font-weight: 800;
             letter-spacing: -0.3px;
-            color: #fce2b4;
+            color: #e4f9f5;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.3;
         }
         .muscle-badge {
-            background: #2f4b5e;
-            padding: 4px 14px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #ffe2b5;
+            background: #11999e;
+            padding: 5px 14px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #e4f9f5;
+            letter-spacing: 0.2px;
         }
 
-        /* НЕ В РЯД: подходы представлены как ПЛИТКА (сетка карточек) */
         .sets-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 22px;
+            gap: 14px;
+            margin-bottom: 20px;
         }
         .set-tile {
-            background: #071e2c;
-            border-radius: 28px;
-            padding: 12px 10px;
+            background: #2d4a47;
+            border-radius: 16px;
+            padding: 12px 8px;
             flex: 1 1 100px;
             min-width: 85px;
             text-align: center;
-            transition: all 0.1s ease;
-            border: 1px solid #325e72;
+            transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            border: 1px solid #30e3ca80;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
             user-select: none;
+            backdrop-filter: blur(2px);
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
         }
+        .set-tile:hover {
+            transform: translateY(-4px);
+            background: #11999e80;
+            border-color: #30e3ca;
+        }
+        
+        @keyframes explodeBoom {
+            0% { transform: scale(1); background: #2d4a47; box-shadow: 0 0 0 0 #30e3ca; }
+            30% { transform: scale(1.15); background: #30e3ca; box-shadow: 0 0 0 12px #30e3ca80; }
+            60% { transform: scale(0.98); background: #11999e; }
+            100% { transform: scale(1); background: linear-gradient(145deg, #11999e, #30e3ca); box-shadow: 0 0 0 0 #30e3ca; }
+        }
+        
+        @keyframes megaExplode {
+            0% { transform: scale(1); background: rgba(64,81,78,0.55); box-shadow: 0 0 0 0 #30e3ca; }
+            25% { transform: scale(1.03); background: #30e3ca80; box-shadow: 0 0 0 25px #30e3ca; }
+            50% { transform: scale(0.99); background: #11999e; box-shadow: 0 0 0 50px #30e3ca00; }
+            100% { transform: scale(1); background: rgba(64,81,78,0.55); box-shadow: 0 0 0 0 #30e3ca; }
+        }
+        
+        .muscle-group.mega-explode {
+            animation: megaExplode 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+            z-index: 100;
+            position: relative;
+        }
+        
+        @keyframes particleFly {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); background: #30e3ca; }
+            50% { opacity: 0.9; background: #e4f9f5; }
+            100% { opacity: 0; transform: translate(var(--tx, 60px), var(--ty, -60px)) scale(0); background: #11999e; }
+        }
+        
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 8px;
+            height: 8px;
+            background: #30e3ca;
+            border-radius: 2px;
+            animation: particleFly 0.7s ease-out forwards;
+        }
+        
+        .particle-mega {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            animation: particleFly 0.8s ease-out forwards;
+        }
+        
+        .set-tile.explode-animation {
+            animation: explodeBoom 0.45s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+            z-index: 10;
+        }
+        
         .set-tile.active-tile {
-            background: #f59e3b;
-            border-color: #ffdc97;
-            box-shadow: 0 5px 14px rgba(245, 158, 59, 0.3);
+            background: linear-gradient(145deg, #11999e, #30e3ca);
+            border-color: #e4f9f5;
+            transform: scale(1.02);
+            box-shadow: 0 8px 18px #30e3ca80;
         }
         .set-tile.active-tile .set-number {
-            color: #141c26;
+            color: #1e2f2c;
+            background: #e4f9f5;
+            font-weight: 800;
         }
         .set-tile.active-tile .set-stats {
-            color: #201d12;
+            color: #1e2f2c;
+            font-weight: 800;
         }
         .set-number {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 800;
-            background: #102f40;
-            width: 48px;
+            background: #40514e;
+            width: 52px;
             padding: 6px 0;
-            border-radius: 40px;
+            border-radius: 12px;
             display: inline-block;
-            color: #ffdeae;
+            color: #30e3ca;
+            transition: 0.1s;
+            font-feature-settings: "tnum";
+            font-family: 'Inter', monospace;
+            letter-spacing: 0;
         }
         .set-stats {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #c6deff;
+            color: #c6efea;
+            letter-spacing: -0.1px;
         }
         .set-tile .check-symbol {
             font-size: 1.2rem;
             opacity: 0.7;
+            font-weight: 600;
         }
         .set-tile.active-tile .check-symbol {
             opacity: 1;
-            text-shadow: 0 0 3px white;
+            transform: scale(1.1);
+            text-shadow: 0 0 4px #e4f9f5;
         }
 
-        /* кнопка отметить все подходы */
         .full-mark {
             width: 100%;
-            background: #1e4357;
-            border: none;
+            background: #2d6a66;
+            border: 1px solid #30e3ca80;
             padding: 12px 0;
-            border-radius: 60px;
+            border-radius: 16px;
             font-weight: 700;
-            color: #fef3cf;
+            color: #e4f9f5;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: 0.2s;
-            margin-top: 6px;
+            transition: all 0.2s;
+            margin-top: 8px;
+            font-family: inherit;
+            letter-spacing: -0.1px;
         }
-        .full-mark:active {
-            background: #2e687f;
-            transform: scale(0.97);
+        .full-mark:hover {
+            background: #30e3ca;
+            color: #1e2f2c;
+            transform: scale(0.98);
+            letter-spacing: 0px;
+            border-color: #e4f9f5;
+            box-shadow: 0 0 12px #30e3ca;
+            font-weight: 800;
         }
 
         .footer {
             text-align: center;
             font-size: 0.7rem;
             margin-top: 40px;
-            color: #5d7b92;
-            background: #030c14a0;
-            padding: 10px;
-            border-radius: 60px;
+            color: #30e3ca;
+            background: rgba(64, 81, 78, 0.5);
+            padding: 12px;
+            border-radius: 16px;
+            backdrop-filter: blur(5px);
+            border: 1px solid #30e3ca40;
+            font-weight: 500;
         }
-        @media (max-width: 550px) {
-            .set-tile { min-width: 70px; padding: 8px 6px; }
-            .set-number { width: 40px; font-size: 0.8rem; }
-            .ex-title h3 { font-size: 1.05rem; }
+
+        /* дополнительные улучшения читаемости */
+        button, .day-btn, .reset, .full-mark, .set-tile {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .group-title span:first-of-type {
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+        
+        .ex-card .ex-title h3 {
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 580px) {
+            .set-tile { min-width: 72px; padding: 8px 4px; }
+            .set-number { width: 40px; font-size: 0.7rem; }
+            .ex-title h3 { font-size: 0.95rem; font-weight: 800; }
+            .group-header { padding: 14px 16px; font-size: 1rem; }
+            .progress-text span { font-size: 1.5rem; }
+            body { font-size: 14px; }
+            .day-btn { padding: 10px 18px; font-size: 0.8rem; }
+        }
+        
+        /* улучшение видимости для маленьких экранов */
+        @media (max-width: 420px) {
+            .set-stats { font-size: 0.65rem; }
+            .group-progress { font-size: 0.65rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="top">
-        <h1>⚡ СИЛОВОЙ СПЛИТ</h1>
-        <div class="sub">плиточные подходы • отмечай касанием</div>
+        <h1>GYMSHARK</h1>
     </div>
 
     <div class="days">
@@ -267,17 +533,15 @@
     </div>
 
     <div class="progress-panel">
-        <div class="progress-text">🏆 подходов: <span id="completedCount">0</span> / <span id="totalCount">0</span></div>
-        <button class="reset" id="resetDayBtn">🌀 сбросить день</button>
+        <div class="progress-text">ПОДХОДОВ: <span id="completedCount">0</span> / <span id="totalCount">0</span></div>
+        <button class="reset" id="resetDayBtn">⟳ СБРОСИТЬ ДЕНЬ</button>
     </div>
 
     <div id="workoutContainer"></div>
-    <div class="footer">🔘 нажми на плитку подхода — отметишь выполненный. кнопка «✔ все подходы» ускорит процесс</div>
 </div>
 
 <script>
-    // ----- ПРОГРАММА (компактная, без дублирования) -----
-    const MON_PROGRAM = [
+    const MON_PROGRAM_RAW = [
         { name: "Сгибание рук под наклоном", muscle: "Бицепс", sets: 5, desc: "до отказа · 90%" },
         { name: "Молотки (поочередно)", muscle: "Бицепс", sets: 5, desc: "до отказа · 90%" },
         { name: "V-образный гриф (21 метод)", muscle: "Бицепс", sets: 3, desc: "21 повтор" },
@@ -293,7 +557,7 @@
         { name: "Тяга верхнего блока (длинная рукоять)", muscle: "Спина", sets: 5, desc: "до отказа · 90%" }
     ];
 
-    const WED_PROGRAM = [
+    const WED_PROGRAM_RAW = [
         { name: "Махи гантелями в стороны", muscle: "Плечи (боковые)", sets: 5, desc: "до отказа · 90%" },
         { name: "Махи гантелями вперёд", muscle: "Плечи (передние)", sets: 5, desc: "до отказа · 90%" },
         { name: "Тяга гантелей вверх (шраги)", muscle: "Трапеция", sets: 5, desc: "до отказа · 90%" },
@@ -301,17 +565,37 @@
         { name: "Мотоцикл (кисти с грифом)", muscle: "Предплечья", sets: 5, desc: "до отказа · 90%" }
     ];
 
-    const FRI_PROGRAM = [...MON_PROGRAM]; // пятница такая же, как понедельник
+    const FRI_PROGRAM_RAW = [...MON_PROGRAM_RAW];
+    const DATA_RAW = { mon: MON_PROGRAM_RAW, wed: WED_PROGRAM_RAW, fri: FRI_PROGRAM_RAW };
+    
+    function groupByMuscle(programArray) {
+        const groups = new Map();
+        for (let idx = 0; idx < programArray.length; idx++) {
+            const ex = programArray[idx];
+            const muscle = ex.muscle;
+            if (!groups.has(muscle)) groups.set(muscle, { exercises: [] });
+            groups.get(muscle).exercises.push({ ...ex, originalIndex: idx });
+        }
+        const grouped = [];
+        for (let [muscleName, data] of groups.entries()) {
+            grouped.push({ muscle: muscleName, exercises: data.exercises, icon: "▣" });
+        }
+        return grouped;
+    }
 
-    const DATA = { mon: MON_PROGRAM, wed: WED_PROGRAM, fri: FRI_PROGRAM };
+    let groupedCache = { mon: null, wed: null, fri: null };
+    function getGrouped(day) {
+        if (!groupedCache[day]) groupedCache[day] = groupByMuscle(DATA_RAW[day]);
+        return groupedCache[day];
+    }
 
-    // состояние
     let currentDay = "mon";
-    let completedMap = new Map(); // ключ: "day_exIdx_setIdx" -> true
-    const STORAGE_KEY = "tile_workout_v3";
+    let completedMap = new Map();
+    let expandedGroups = { mon: {}, wed: {}, fri: {} };
+    const STORAGE_KEY = "smooth_burst_tracker_v6";
 
     function save() {
-        const obj = { day: currentDay, map: Object.fromEntries(completedMap) };
+        const obj = { day: currentDay, map: Object.fromEntries(completedMap), expanded: expandedGroups };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
     }
 
@@ -322,196 +606,316 @@
             const data = JSON.parse(raw);
             if (data.day === "mon" || data.day === "wed" || data.day === "fri") currentDay = data.day;
             if (data.map) {
+                completedMap.clear();
                 for (const [k, v] of Object.entries(data.map)) if (v === true) completedMap.set(k, true);
+            }
+            if (data.expanded) {
+                expandedGroups = data.expanded;
+                for (let d of ['mon','wed','fri']) if (!expandedGroups[d]) expandedGroups[d] = {};
+            } else {
+                for (let d of ['mon','wed','fri']) expandedGroups[d] = {};
             }
         } catch(e) {}
     }
 
-    function makeKey(exIdx, setIdx) {
-        return `${currentDay}_${exIdx}_${setIdx}`;
-    }
-
-    function totalSets() {
-        const prog = DATA[currentDay];
-        let total = 0;
-        for (let i = 0; i < prog.length; i++) total += prog[i].sets;
-        return total;
-    }
-
-    function completedCount() {
+    function makeKey(exIdx, setIdx) { return `${currentDay}_${exIdx}_${setIdx}`; }
+    function totalSets() { return DATA_RAW[currentDay].reduce((s, ex) => s + ex.sets, 0); }
+    function getCompletedCountForCurrentDay() {
         let cnt = 0;
-        for (let v of completedMap.values()) if (v === true) cnt++;
+        const prefix = `${currentDay}_`;
+        for (let key of completedMap.keys()) if (key.startsWith(prefix) && completedMap.get(key) === true) cnt++;
         return cnt;
+    }
+    function isExerciseCompleted(exGlobalIdx) {
+        const ex = DATA_RAW[currentDay][exGlobalIdx];
+        if (!ex) return false;
+        for (let s = 0; s < ex.sets; s++) if (!completedMap.get(makeKey(exGlobalIdx, s))) return false;
+        return true;
+    }
+    function isGroupFullyCompleted(group) {
+        for (let exItem of group.exercises) if (!isExerciseCompleted(exItem.originalIndex)) return false;
+        return true;
+    }
+
+    function createExplosionParticles(x, y, isMega = false) {
+        const count = isMega ? 50 : 18;
+        const size = isMega ? 12 : 8;
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('div');
+            particle.className = isMega ? 'particle particle-mega' : 'particle';
+            const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+            const distance = (isMega ? 80 : 50) + Math.random() * (isMega ? 60 : 35);
+            const tx = Math.cos(angle) * distance * (0.5 + Math.random() * 0.9);
+            const ty = Math.sin(angle) * distance * (0.5 + Math.random() * 0.9);
+            particle.style.setProperty('--tx', tx + 'px');
+            particle.style.setProperty('--ty', ty + 'px');
+            particle.style.left = (x - size/2) + 'px';
+            particle.style.top = (y - size/2) + 'px';
+            const hue = 160 + Math.random() * 50;
+            particle.style.background = `hsl(${hue}, 85%, 60%)`;
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 800);
+        }
+        if (isMega && navigator.vibrate) navigator.vibrate([80, 40, 80]);
+    }
+
+    function animateExplosion(element, isActivating) {
+        if (!element || !isActivating) return;
+        element.classList.remove('explode-animation');
+        void element.offsetHeight;
+        element.classList.add('explode-animation');
+        const rect = element.getBoundingClientRect();
+        createExplosionParticles(rect.left + rect.width/2, rect.top + rect.height/2, false);
+        setTimeout(() => element.classList.remove('explode-animation'), 500);
+    }
+
+    function triggerMegaExplosionAndCollapse(groupElement, muscleName) {
+        if (!groupElement) return;
+        
+        groupElement.classList.remove('mega-explode');
+        void groupElement.offsetHeight;
+        groupElement.classList.add('mega-explode');
+        const rect = groupElement.getBoundingClientRect();
+        createExplosionParticles(rect.left + rect.width/2, rect.top + rect.height/2, true);
+        
+        setTimeout(() => {
+            if (expandedGroups[currentDay] && expandedGroups[currentDay][muscleName] !== false) {
+                expandedGroups[currentDay][muscleName] = false;
+                save();
+                
+                const groupHeader = groupElement.querySelector('.group-header');
+                if (groupHeader && !groupHeader.classList.contains('collapsed')) {
+                    groupHeader.classList.add('collapsed');
+                }
+                
+                setTimeout(() => {
+                    groupElement.classList.remove('mega-explode');
+                }, 600);
+            } else {
+                setTimeout(() => {
+                    groupElement.classList.remove('mega-explode');
+                }, 200);
+            }
+        }, 350);
     }
 
     function toggleSet(exIdx, setIdx, isChecked) {
         const key = makeKey(exIdx, setIdx);
         if (isChecked) completedMap.set(key, true);
         else completedMap.delete(key);
+        
+        const ex = DATA_RAW[currentDay][exIdx];
+        const muscleName = ex.muscle;
+        const grouped = getGrouped(currentDay);
+        const targetGroup = grouped.find(g => g.muscle === muscleName);
+        
+        let isNowFullyCompleted = false;
+        if (targetGroup) {
+            isNowFullyCompleted = true;
+            for (let exItem of targetGroup.exercises) {
+                if (!isExerciseCompleted(exItem.originalIndex)) {
+                    isNowFullyCompleted = false;
+                    break;
+                }
+            }
+        }
+        
         save();
-        render();
+        
+        render(() => {
+            if (isNowFullyCompleted && targetGroup) {
+                const groupElement = document.querySelector(`.muscle-group[data-group-muscle="${escapeAttr(muscleName)}"]`);
+                if (groupElement) {
+                    triggerMegaExplosionAndCollapse(groupElement, muscleName);
+                }
+            } else if (isChecked) {
+                const tile = document.querySelector(`.set-tile[data-ex="${exIdx}"][data-set="${setIdx}"]`);
+                if (tile) animateExplosion(tile, true);
+            }
+        });
     }
 
     function completeAllExercise(exIdx, totalSetCount) {
         let changed = false;
         for (let s = 0; s < totalSetCount; s++) {
             const key = makeKey(exIdx, s);
-            if (!completedMap.get(key)) {
-                completedMap.set(key, true);
-                changed = true;
-            }
+            if (!completedMap.get(key)) { completedMap.set(key, true); changed = true; }
         }
-        if (changed) { save(); render(); }
+        if (changed) {
+            const ex = DATA_RAW[currentDay][exIdx];
+            const muscleName = ex.muscle;
+            const grouped = getGrouped(currentDay);
+            const targetGroup = grouped.find(g => g.muscle === muscleName);
+            let isNowFullyCompleted = false;
+            if (targetGroup) {
+                isNowFullyCompleted = true;
+                for (let exItem of targetGroup.exercises) {
+                    if (!isExerciseCompleted(exItem.originalIndex)) { isNowFullyCompleted = false; break; }
+                }
+            }
+            save();
+            render(() => {
+                if (isNowFullyCompleted && targetGroup) {
+                    const groupElement = document.querySelector(`.muscle-group[data-group-muscle="${escapeAttr(muscleName)}"]`);
+                    if (groupElement) triggerMegaExplosionAndCollapse(groupElement, muscleName);
+                } else {
+                    const card = document.querySelector(`.ex-card`);
+                    if (card) {
+                        const rect = card.getBoundingClientRect();
+                        createExplosionParticles(rect.left + rect.width/2, rect.top + rect.height/2, false);
+                    }
+                }
+            });
+        }
     }
 
     function resetCurrentDay() {
-        const prog = DATA[currentDay];
-        for (let i = 0; i < prog.length; i++) {
-            for (let s = 0; s < prog[i].sets; s++) {
-                const key = makeKey(i, s);
-                if (completedMap.has(key)) completedMap.delete(key);
-            }
-        }
+        const prefix = `${currentDay}_`;
+        const keysToDelete = [];
+        for (let key of completedMap.keys()) if (key.startsWith(prefix)) keysToDelete.push(key);
+        for (let key of keysToDelete) completedMap.delete(key);
         save();
         render();
     }
 
-    function setDay(day) {
-        currentDay = day;
-        save();
-        render();
-        updateActiveTab();
-    }
-
+    function setDay(day) { currentDay = day; save(); render(); updateActiveTab(); }
+    
     function updateActiveTab() {
         document.querySelectorAll('.day-btn').forEach(btn => {
             const d = btn.getAttribute('data-day');
-            if ((d === 'mon' && currentDay === 'mon') ||
-                (d === 'wed' && currentDay === 'wed') ||
-                (d === 'fri' && currentDay === 'fri')) {
+            if ((d === 'mon' && currentDay === 'mon') || (d === 'wed' && currentDay === 'wed') || (d === 'fri' && currentDay === 'fri'))
                 btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            else btn.classList.remove('active');
         });
     }
+    
+    function toggleMuscleGroup(muscleName) {
+        if (!expandedGroups[currentDay]) expandedGroups[currentDay] = {};
+        expandedGroups[currentDay][muscleName] = !expandedGroups[currentDay][muscleName];
+        save();
+        render();
+    }
 
-    // рендер с плиточной сеткой
-    function render() {
+    function render(callback) {
         const container = document.getElementById('workoutContainer');
         if (!container) return;
-        const program = DATA[currentDay];
+        const grouped = getGrouped(currentDay);
+        const rawProgram = DATA_RAW[currentDay];
         let html = '';
-
-        for (let i = 0; i < program.length; i++) {
-            const ex = program[i];
-            const setsAmount = ex.sets;
-            let allDone = true;
-            for (let s = 0; s < setsAmount; s++) {
-                const key = makeKey(i, s);
-                if (!completedMap.get(key)) { allDone = false; break; }
-            }
-            const cardClass = allDone ? 'ex-card completed' : 'ex-card';
-
-            html += `<div class="${cardClass}">
-                        <div class="ex-title">
-                            <h3>${escapeHtml(ex.name)}</h3>
-                            <div class="muscle-badge">${escapeHtml(ex.muscle)}</div>
+        
+        for (let group of grouped) {
+            const muscleName = group.muscle;
+            const exercises = group.exercises;
+            const isExpanded = expandedGroups[currentDay]?.[muscleName] === true;
+            const arrowClass = isExpanded ? '' : 'collapsed';
+            const allExercisesDone = isGroupFullyCompleted(group);
+            const completedCount = group.exercises.filter(ex => isExerciseCompleted(ex.originalIndex)).length;
+            
+            const progressBadge = allExercisesDone ? 
+                `<span class="group-progress completed">ВСЕ ${group.exercises.length} УПР. ВЫПОЛНЕНЫ</span>` : 
+                `<span class="group-progress"> ${completedCount}/${group.exercises.length} упр.</span>`;
+            
+            html += `<div class="muscle-group" data-group-muscle="${escapeAttr(muscleName)}">
+                        <div class="group-header ${arrowClass}" data-muscle="${escapeAttr(muscleName)}">
+                            <div class="group-title">
+                                <span></span>
+                                <span>${escapeHtml(muscleName)}</span>
+                                <span class="group-badge">${exercises.length} упр.</span>
+                                ${progressBadge}
+                            </div>
+                            <div class="group-arrow">▼</div>
                         </div>
-                        <div class="sets-grid">`;
-
-            // плитки подходов (не в ряд — гибкая сетка)
-            for (let s = 0; s < setsAmount; s++) {
-                const key = makeKey(i, s);
-                const isCompleted = completedMap.get(key) === true;
-                const activeTileClass = isCompleted ? 'active-tile' : '';
-                html += `<div class="set-tile ${activeTileClass}" data-ex="${i}" data-set="${s}">
-                            <div class="set-number">${s+1}/${setsAmount}</div>
-                            <div class="set-stats">⚡ ${escapeHtml(ex.desc)}</div>
-                            <div class="check-symbol">${isCompleted ? '✓✓' : '○'}</div>
-                         </div>`;
+                        <div class="exercises-container">`;
+            
+            if (isExpanded) {
+                for (let exItem of exercises) {
+                    const globalExIdx = exItem.originalIndex;
+                    const ex = rawProgram[globalExIdx];
+                    if (!ex) continue;
+                    const setsAmount = ex.sets;
+                    const exerciseCompleted = isExerciseCompleted(globalExIdx);
+                    const cardClass = exerciseCompleted ? 'ex-card completed' : 'ex-card';
+                    html += `<div class="${cardClass}">
+                                <div class="ex-title"><h3>${escapeHtml(ex.name)}</h3><div class="muscle-badge">${escapeHtml(ex.muscle)}</div></div>
+                                <div class="sets-grid">`;
+                    for (let s = 0; s < setsAmount; s++) {
+                        const isCompleted = completedMap.get(makeKey(globalExIdx, s)) === true;
+                        const activeTileClass = isCompleted ? 'active-tile' : '';
+                        html += `<div class="set-tile ${activeTileClass}" data-ex="${globalExIdx}" data-set="${s}">
+                                    <div class="set-number">${s+1}/${setsAmount}</div>
+                                    <div class="set-stats"> ${escapeHtml(ex.desc)}</div>
+                                    <div class="check-symbol">${isCompleted ? '✔✔' : '○'}</div>
+                                </div>`;
+                    }
+                    html += `</div><button class="full-mark" data-complete-ex="${globalExIdx}">✓ Отметить все подходы (${setsAmount})</button></div>`;
+                }
+            } else {
+                let totalSetsInGroup = 0;
+                for (let exItem of exercises) { const orig = rawProgram[exItem.originalIndex]; if (orig) totalSetsInGroup += orig.sets; }
+                html += `<div style="padding: 14px 20px; color: #c6efea; font-size: 0.85rem; text-align: center; background: #2d4a47; border-radius: 16px; margin-bottom: 8px; border: 1px dashed #30e3ca60; font-weight: 500;">
+                            ${allExercisesDone ? '⭐ ГРУППА ВЫПОЛНЕНА! Нажми, чтобы раскрыть ⭐' : `📋 ${exercises.length} упражнений, ${totalSetsInGroup} подходов. Раскрой, чтобы отметить.`}
+                        </div>`;
             }
-
-            html += `</div>
-                    <button class="full-mark" data-complete-ex="${i}">
-                        ✔ Отметить все подходы (${setsAmount})
-                    </button>
-                </div>`;
+            html += `</div></div>`;
         }
-
+        
         container.innerHTML = html;
-        document.getElementById('completedCount').innerText = completedCount();
+        document.getElementById('completedCount').innerText = getCompletedCountForCurrentDay();
         document.getElementById('totalCount').innerText = totalSets();
-        attachTileEvents(); // навешиваем клики на плитки напрямую (или делегирование, но для уверенности)
+        if (callback) setTimeout(callback, 30);
     }
-
-    // Прямая обработка без дублей (используем делегирование на контейнере, но из-за динамики лучше глобальный слушатель один раз)
-    function attachDelegation() {
-        const container = document.getElementById('workoutContainer');
-        if (!container) return;
-        // удаляем старые если есть, но новый не наложится дублем, т.к. вызываем один раз в init
-        container.removeEventListener('click', globalClickHandler);
-        container.addEventListener('click', globalClickHandler);
-    }
+    
+    function escapeAttr(str) { if (!str) return ''; return str.replace(/[&'"]/g, c => c === '&' ? '&amp;' : (c === "'" ? '&apos;' : '&quot;')); }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
 
     function globalClickHandler(e) {
-        // клик по плитке подхода
+        const groupHeader = e.target.closest('.group-header');
+        if (groupHeader) {
+            e.preventDefault();
+            const muscle = groupHeader.getAttribute('data-muscle');
+            if (muscle) toggleMuscleGroup(muscle);
+            else {
+                const titleSpan = groupHeader.querySelector('.group-title span:not(.group-badge):not(.group-progress)');
+                if (titleSpan) { let muscleName = titleSpan.innerText.trim(); if (muscleName) toggleMuscleGroup(muscleName); }
+            }
+            return;
+        }
         const tile = e.target.closest('.set-tile');
         if (tile && tile.hasAttribute('data-ex') && tile.hasAttribute('data-set')) {
             e.preventDefault();
             const exIdx = parseInt(tile.getAttribute('data-ex'), 10);
             const setIdx = parseInt(tile.getAttribute('data-set'), 10);
-            const key = makeKey(exIdx, setIdx);
-            const currentStatus = completedMap.get(key) === true;
+            const currentStatus = completedMap.get(makeKey(exIdx, setIdx)) === true;
             toggleSet(exIdx, setIdx, !currentStatus);
             return;
         }
-        // кнопка "отметить всё"
         const fullBtn = e.target.closest('.full-mark');
         if (fullBtn && fullBtn.hasAttribute('data-complete-ex')) {
             e.preventDefault();
             const exIdx = parseInt(fullBtn.getAttribute('data-complete-ex'), 10);
-            const exObj = DATA[currentDay]?.[exIdx];
-            if (exObj) {
-                completeAllExercise(exIdx, exObj.sets);
-            }
+            const exObj = DATA_RAW[currentDay]?.[exIdx];
+            if (exObj) completeAllExercise(exIdx, exObj.sets);
             return;
         }
     }
 
-    function attachTileEvents() {
-        // ничего, делегирование уже обрабатывает динамические клики
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, (m) => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    function attachDelegation() {
+        const container = document.getElementById('workoutContainer');
+        if (container) { container.removeEventListener('click', globalClickHandler); container.addEventListener('click', globalClickHandler); }
     }
 
     function init() {
         load();
+        for (let d of ['mon','wed','fri']) if (!expandedGroups[d]) expandedGroups[d] = {};
         render();
         attachDelegation();
         updateActiveTab();
-
-        // таб-кнопки
         document.querySelectorAll('.day-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const day = btn.getAttribute('data-day');
-                if (day === 'mon') setDay('mon');
-                else if (day === 'wed') setDay('wed');
-                else if (day === 'fri') setDay('fri');
-            });
+            btn.addEventListener('click', () => { const day = btn.getAttribute('data-day'); if (day === 'mon') setDay('mon'); else if (day === 'wed') setDay('wed'); else if (day === 'fri') setDay('fri'); });
         });
         const resetBtn = document.getElementById('resetDayBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                const name = currentDay === 'mon' ? 'понедельник' : (currentDay === 'wed' ? 'среду' : 'пятницу');
-                if (confirm(`Сбросить все плитки подходов за ${name}?`)) resetCurrentDay();
-            });
-        }
+        if (resetBtn) resetBtn.addEventListener('click', () => { const name = currentDay === 'mon' ? 'понедельник' : (currentDay === 'wed' ? 'среду' : 'пятницу'); if (confirm(`Сбросить все подходы за ${name}?`)) resetCurrentDay(); });
     }
-
     init();
 </script>
 </body>
